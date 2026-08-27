@@ -25,6 +25,33 @@
 </head>
 <body>
 
+    <!-- ===== LOGIN SCREEN ===== -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <img src="wingsati logo vertikal.png" alt="Logo Wingsati" class="login-logo" />
+            <h1 class="login-title">Wingsati</h1>
+            <p class="login-sub">Manajemen Absensi &amp; Cuti</p>
+
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" id="loginEmail" placeholder="nama@wingsati.com" required autocomplete="email" />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+                </div>
+                <div class="login-error" id="loginError"></div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+                <button type="button" class="btn btn-outline btn-sm login-register" id="btnRegister">Buat Akun Baru</button>
+            </form>
+            <p class="login-hint">Manajemen = akses penuh · Karyawan = lihat saja</p>
+        </div>
+    </div>
+
+    <!-- ===== APP (tersembunyi sampai login) ===== -->
+    <div id="appRoot" style="display:none;">
+
     <!-- ===== INSTALL PROMPT BANNER ===== -->
     <div class="install-banner" id="installBanner" style="display:none;">
         <div class="install-banner-inner">
@@ -53,11 +80,16 @@
             </div>
             <div class="header-right">
                 <span class="badge-date" id="todayDate"></span>
+                <span class="user-badge" id="userBadge" title="Email login"></span>
+                <span class="role-badge" id="roleBadge">Karyawan</span>
                 <button class="theme-toggle" onclick="toggleTheme()" title="Mode Gelap/Terang" aria-label="Ganti tema">
                     <i class="fas fa-moon" id="themeIcon"></i>
                 </button>
                 <button class="btn-icon" onclick="exportCSV()" title="Ekspor CSV" aria-label="Ekspor CSV">
                     <i class="fas fa-file-export"></i> <span class="hide-mobile">Ekspor</span>
+                </button>
+                <button class="btn-icon" id="btnLogout" title="Keluar" aria-label="Logout">
+                    <i class="fas fa-right-from-bracket"></i>
                 </button>
             </div>
         </header>
@@ -101,7 +133,7 @@
             <div class="col">
 
                 <!-- Form Absensi -->
-                <div class="card mb-20">
+                <div class="card form-card mb-20">
                     <div class="card-title"><i class="fas fa-pen-to-square"></i> Input Ketidakhadiran</div>
                     <form id="absenForm">
                         <div class="form-group">
@@ -131,7 +163,7 @@
                 </div>
 
                 <!-- Cuti Bersama Masal -->
-                <div class="card card-accent-gold mb-20">
+                <div class="card card-accent-gold form-card mb-20">
                     <div class="card-title gold-accent"><i class="fas fa-calendar-plus"></i> Cuti Bersama Masal</div>
                     <form id="cutiMasalForm">
                         <div class="form-group">
@@ -147,7 +179,7 @@
                 </div>
 
                 <!-- Tambah Personel -->
-                <div class="card">
+                <div class="card form-card">
                     <div class="card-title"><i class="fas fa-user-plus"></i> Tambah Karyawan</div>
                     <form id="personelForm">
                         <div class="form-group">
@@ -280,15 +312,25 @@
 
         <!-- Footer -->
         <div class="page-footer">
-            <i class="fas fa-database"></i> Data tersimpan di lokal browser &bull; Versi 3.1
+            <i class="fas fa-cloud"></i> Data tersinkron di Cloud Firestore &bull; Versi 3.2
         </div>
 
     </div>
 
+    </div>
+    <!-- /#appRoot -->
+
     <!-- ===== TOAST CONTAINER ===== -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- JavaScript terpisah -->
+    <!-- ===== FIREBASE SDK (compat) ===== -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <!-- Config & Sync Layer -->
+    <script src="firebase.js"></script>
+    <script src="firebase-sync.js"></script>
+    <!-- Aplikasi -->
     <script src="script.js"></script>
     <!-- PWA: Service Worker Registration -->
     <script>

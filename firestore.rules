@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== FUNGSI BANTU =====
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // DAFTAR EMAIL ADMIN — HARUS SAMA dengan ADMIN_EMAILS di firebase.js
+    function adminEmails() {
+      return [
+        'admin@wingsati.com',
+        'dirut@wingsati.com'
+      ];
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email in adminEmails();
+    }
+
+    // ===== DOKUMEN META (personel) =====
+    // Semua user login bisa BACA; hanya ADMIN yang bisa TULIS
+    match /meta/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ===== KOLEKSI ABSENSI =====
+    // Semua user login bisa BACA; hanya ADMIN yang bisa TULIS
+    match /absensi/{docId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

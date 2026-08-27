@@ -1,89 +1,9 @@
 // ============================================================
-//  DATA
+//  DATA & STORAGE
+//  Diambil dari Cloud Firestore (lihat firebase.js & firebase-sync.js).
+//  listPersonel, dataAbsensi, savePersonel, addAbsensi, deleteAbsensi,
+//  currentUser, currentRole, isAdmin() didefinisikan di layer Firebase.
 // ============================================================
-
-const DEFAULT_PERSONEL = [
-    { nama: "MINARNI JUNARIAH", kategori: "Karyawan" },
-    { nama: "I MD DWI PM", kategori: "Karyawan" },
-    { nama: "KENIA CHICELIA", kategori: "Karyawan" },
-    { nama: "MADE SUARTA", kategori: "Karyawan" },
-    { nama: "I KOMANG PARTHA", kategori: "Karyawan" },
-    { nama: "FINA SAFARINA", kategori: "Karyawan" },
-    { nama: "SUPRANTO", kategori: "Karyawan" },
-    { nama: "DAMAR KESID", kategori: "Karyawan" },
-    { nama: "MAURIN DARENOH", kategori: "Karyawan" },
-    { nama: "ICA RATNASARI", kategori: "Karyawan" },
-    { nama: "MEINAH UMIYATUN", kategori: "Karyawan" },
-    { nama: "ISMI WAHYUNI", kategori: "Karyawan" },
-    { nama: "AMAD BISRI", kategori: "Karyawan" },
-    { nama: "PITRI YADI", kategori: "Karyawan" },
-    { nama: "ARIF SETIAWAN", kategori: "Karyawan" },
-    { nama: "JAMHARI", kategori: "Karyawan" },
-    { nama: "ABU THOLIB", kategori: "Karyawan" },
-    { nama: "RIKO", kategori: "Karyawan" },
-    { nama: "NOVITA", kategori: "Karyawan" },
-    { nama: "KOMUT", kategori: "Manajemen" },
-    { nama: "KOMISARIS", kategori: "Manajemen" },
-    { nama: "DIRUT", kategori: "Manajemen" },
-    { nama: "DIREKTUR", kategori: "Manajemen" }
-];
-
-const REKAP_JULI = {
-    "MINARNI JUNARIAH": { sakit: 0, cuti: 3, cutiBersama: 5 },
-    "I MD DWI PM": { sakit: 1, cuti: 7, cutiBersama: 5 },
-    "KENIA CHICELIA": { sakit: 0, cuti: 3, cutiBersama: 5 },
-    "MADE SUARTA": { sakit: 2, cuti: 0, cutiBersama: 5 },
-    "I KOMANG PARTHA": { sakit: 1, cuti: 3, cutiBersama: 5 },
-    "FINA SAFARINA": { sakit: 0, cuti: 1, cutiBersama: 5 },
-    "SUPRANTO": { sakit: 0, cuti: 3, cutiBersama: 5 },
-    "DAMAR KESID": { sakit: 0, cuti: 2, cutiBersama: 5 },
-    "MAURIN DARENOH": { sakit: 0, cuti: 4, cutiBersama: 5 },
-    "ICA RATNASARI": { sakit: 1, cuti: 0, cutiBersama: 5 },
-    "MEINAH UMIYATUN": { sakit: 7, cuti: 0, cutiBersama: 5 },
-    "ISMI WAHYUNI": { sakit: 0, cuti: 0, cutiBersama: 5 },
-    "AMAD BISRI": { sakit: 1, cuti: 6, cutiBersama: 5 },
-    "PITRI YADI": { sakit: 0, cuti: 0, cutiBersama: 5 },
-    "ARIF SETIAWAN": { sakit: 2, cuti: 3, cutiBersama: 5 },
-    "JAMHARI": { sakit: 1, cuti: 2, cutiBersama: 5 },
-    "ABU THOLIB": { sakit: 2, cuti: 4, cutiBersama: 5 },
-    "RIKO": { sakit: 0, cuti: 0, cutiBersama: 0 },
-    "NOVITA": { sakit: 0, cuti: 0, cutiBersama: 0 }
-};
-
-function generateInitialData() {
-    const records = [];
-    let id = 1;
-    for (const [nama, d] of Object.entries(REKAP_JULI)) {
-        for (let i = 0; i < d.sakit; i++) {
-            records.push({ id: id++, tanggal: `2026-02-${String(i + 1).padStart(2, '0')}`, tahun: "2026", nama,
-                status: "Sakit", keterangan: "Sakit (s.d Juli 2026)" });
-        }
-        for (let i = 0; i < d.cuti; i++) {
-            records.push({ id: id++, tanggal: `2026-03-${String(i + 1).padStart(2, '0')}`, tahun: "2026", nama,
-                status: "Cuti", keterangan: "Cuti pribadi (s.d Juli 2026)" });
-        }
-        for (let i = 0; i < d.cutiBersama; i++) {
-            records.push({ id: id++, tanggal: `2026-05-${String(i + 1).padStart(2, '0')}`, tahun: "2026", nama,
-                status: "Cuti Bersama", keterangan: "Cuti Bersama (s.d Juli 2026)" });
-        }
-    }
-    return records;
-}
-
-// ============================================================
-//  STORAGE
-// ============================================================
-
-let listPersonel = JSON.parse(localStorage.getItem('wingsati_personel')) || DEFAULT_PERSONEL;
-let dataAbsensi = JSON.parse(localStorage.getItem('wingsati_absensi')) || generateInitialData();
-
-function savePersonel() {
-    localStorage.setItem('wingsati_personel', JSON.stringify(listPersonel));
-}
-
-function saveAbsensi() {
-    localStorage.setItem('wingsati_absensi', JSON.stringify(dataAbsensi));
-}
 
 // ============================================================
 //  STATE
@@ -339,12 +259,21 @@ function renderTable() {
 //  CRUD
 // ============================================================
 
-function hapusData(id) {
+async function hapusData(id) {
+    if (!isAdmin()) {
+        showToast('Hanya Manajemen yang dapat menghapus!', 'error');
+        return;
+    }
     if (!confirm('Hapus data ini?')) return;
-    dataAbsensi = dataAbsensi.filter(d => d.id !== id);
-    saveAbsensi();
-    renderAll();
-    showToast('Data dihapus', 'success');
+    try {
+        await deleteAbsensi(id);
+        dataAbsensi = dataAbsensi.filter(d => d.id !== id);
+        renderAll();
+        showToast('Data dihapus', 'success');
+    } catch (e) {
+        console.error(e);
+        showToast('Gagal menghapus (periksa hak akses)', 'error');
+    }
 }
 
 // ============================================================
@@ -352,8 +281,12 @@ function hapusData(id) {
 // ============================================================
 
 // Absensi individual
-absenForm.addEventListener('submit', function(e) {
+absenForm.addEventListener('submit', async function(e) {
     e.preventDefault();
+    if (!isAdmin()) {
+        showToast('Hanya Manajemen yang dapat input!', 'error');
+        return;
+    }
     const tgl = tanggalInput.value;
     const nama = namaSelect.value;
     const status = statusSelect.value;
@@ -371,24 +304,27 @@ absenForm.addEventListener('submit', function(e) {
     }
 
     const tahun = tgl.split('-')[0];
-    dataAbsensi.push({
-        id: Date.now() + Math.random(),
-        tanggal: tgl,
-        tahun: tahun,
-        nama: nama,
-        status: status,
-        keterangan: ket
-    });
-    saveAbsensi();
-    absenForm.reset();
-    tanggalInput.valueAsDate = new Date();
-    renderAll();
-    showToast(`✅ ${nama} — ${status} berhasil dicatat`, 'success');
+    const rec = { tanggal: tgl, tahun: tahun, nama: nama, status: status, keterangan: ket };
+    try {
+        const id = await addAbsensi(rec);
+        dataAbsensi.push({ id, ...rec });
+        absenForm.reset();
+        tanggalInput.valueAsDate = new Date();
+        renderAll();
+        showToast(`✅ ${nama} — ${status} berhasil dicatat`, 'success');
+    } catch (err) {
+        console.error(err);
+        showToast('Gagal menyimpan (periksa hak akses)', 'error');
+    }
 });
 
 // Cuti Bersama Masal
-cutiMasalForm.addEventListener('submit', function(e) {
+cutiMasalForm.addEventListener('submit', async function(e) {
     e.preventDefault();
+    if (!isAdmin()) {
+        showToast('Hanya Manajemen yang dapat input!', 'error');
+        return;
+    }
     const tgl = $('tanggalMasal').value;
     const ket = $('ketMasal').value.trim();
     if (!tgl || !ket) {
@@ -397,29 +333,32 @@ cutiMasalForm.addEventListener('submit', function(e) {
     }
     const tahun = tgl.split('-')[0];
     let added = 0;
-    listPersonel.forEach(p => {
-        const sudah = dataAbsensi.some(d => d.nama === p.nama && d.tanggal === tgl);
-        if (!sudah) {
-            dataAbsensi.push({
-                id: Date.now() + Math.random() + Math.random(),
-                tanggal: tgl,
-                tahun: tahun,
-                nama: p.nama,
-                status: 'Cuti Bersama',
-                keterangan: ket
-            });
-            added++;
+    try {
+        for (const p of listPersonel) {
+            const sudah = dataAbsensi.some(d => d.nama === p.nama && d.tanggal === tgl);
+            if (!sudah) {
+                const rec = { tanggal: tgl, tahun: tahun, nama: p.nama, status: 'Cuti Bersama', keterangan: ket };
+                const id = await addAbsensi(rec);
+                dataAbsensi.push({ id, ...rec });
+                added++;
+            }
         }
-    });
-    saveAbsensi();
-    cutiMasalForm.reset();
-    renderAll();
-    showToast(`✅ Cuti Bersama ditambahkan untuk ${added} personel`, 'success');
+        cutiMasalForm.reset();
+        renderAll();
+        showToast(`✅ Cuti Bersama ditambahkan untuk ${added} personel`, 'success');
+    } catch (err) {
+        console.error(err);
+        showToast('Gagal menyimpan (periksa hak akses)', 'error');
+    }
 });
 
 // Tambah Personel
-personelForm.addEventListener('submit', function(e) {
+personelForm.addEventListener('submit', async function(e) {
     e.preventDefault();
+    if (!isAdmin()) {
+        showToast('Hanya Manajemen yang dapat menambah!', 'error');
+        return;
+    }
     const nama = $('namaBaru').value.trim().toUpperCase();
     const kategori = $('kategoriBaru').value;
     if (!nama) {
@@ -431,10 +370,15 @@ personelForm.addEventListener('submit', function(e) {
         return;
     }
     listPersonel.push({ nama, kategori });
-    savePersonel();
-    personelForm.reset();
-    renderAll();
-    showToast(`✅ ${nama} ditambahkan sebagai ${kategori}`, 'success');
+    try {
+        await savePersonel();
+        personelForm.reset();
+        renderAll();
+        showToast(`✅ ${nama} ditambahkan sebagai ${kategori}`, 'success');
+    } catch (err) {
+        console.error(err);
+        showToast('Gagal menyimpan (periksa hak akses)', 'error');
+    }
 });
 
 // ============================================================
@@ -565,13 +509,16 @@ function renderAll() {
 
     // Load history toggle state
     loadHistoryState();
+
+    // Terapkan pembatasan berdasarkan role (admin / karyawan)
+    if (typeof applyRoleUI === 'function') applyRoleUI();
 }
 
 // ============================================================
 //  INIT
+//  Render dipicu oleh firebase-sync.js (onAuthStateChanged)
+//  setelah data berhasil dimuat dari Firestore.
 // ============================================================
-
-document.addEventListener('DOMContentLoaded', renderAll);
 
 // ============================================================
 //  PWA: INSTALL PROMPT
