@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f3b5e" />
+    <title>Wingsati — Manajemen Absensi &amp; Cuti</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Wingsati" />
+    <link rel="apple-touch-icon" href="wingsati logo vertikal.png" />
+    <meta name="application-name" content="Wingsati" />
+    <meta name="msapplication-TileColor" content="#0f3b5e" />
+    <!-- Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- CSS terpisah -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <!-- ===== INSTALL PROMPT BANNER ===== -->
+    <div class="install-banner" id="installBanner" style="display:none;">
+        <div class="install-banner-inner">
+            <i class="fas fa-mobile-screen-button"></i>
+            <div class="install-text">
+                <strong>Pasang Wingsati di HP?</strong>
+                <span>Akses cepat seperti aplikasi native</span>
+            </div>
+            <div class="install-actions">
+                <button class="btn-install-yes" id="installYes">Pasang</button>
+                <button class="btn-install-no" id="installNo" aria-label="Tutup"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- ===== HEADER ===== -->
+        <header class="app-header">
+            <div class="header-left">
+                <!-- LOGO WINGSATI -->
+                <img src="wingsati logo vertikal.png" alt="Logo Wingsati" class="logo-img" />
+                <div>
+                    
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="badge-date" id="todayDate"></span>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Mode Gelap/Terang" aria-label="Ganti tema">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+                <button class="btn-icon" onclick="exportCSV()" title="Ekspor CSV" aria-label="Ekspor CSV">
+                    <i class="fas fa-file-export"></i> <span class="hide-mobile">Ekspor</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ===== STATS ===== -->
+        <section class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                <div class="stat-info">
+                    <div class="number" id="totalKaryawan">0</div>
+                    <div class="label">Total Personel</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="fas fa-calendar-times"></i></div>
+                <div class="stat-info">
+                    <div class="number" id="totalAbsen">0</div>
+                    <div class="label">Ketidakhadiran</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon gold"><i class="fas fa-umbrella-beach"></i></div>
+                <div class="stat-info">
+                    <div class="number" id="totalCuti">0</div>
+                    <div class="label">Cuti Terpakai</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <div class="number" id="rataSisa">0</div>
+                    <div class="label">Rata-rata Sisa Cuti</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== TWO COLUMN ===== -->
+        <div class="two-col">
+
+            <!-- === KOLOM KIRI: FORM === -->
+            <div class="col">
+
+                <!-- Form Absensi -->
+                <div class="card mb-20">
+                    <div class="card-title"><i class="fas fa-pen-to-square"></i> Input Ketidakhadiran</div>
+                    <form id="absenForm">
+                        <div class="form-group">
+                            <label>Tanggal <span class="required">*</span></label>
+                            <input type="date" class="form-control" id="tanggal" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Nama <span class="required">*</span></label>
+                            <select class="form-control" id="nama" required>
+                                <option value="">— Pilih —</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status <span class="required">*</span></label>
+                            <select class="form-control" id="status" required>
+                                <option value="Sakit">Sakit</option>
+                                <option value="Cuti">Cuti (pribadi)</option>
+                                <option value="Cuti Bersama">Cuti Bersama</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Keterangan</label>
+                            <textarea class="form-control" id="keterangan" rows="2" placeholder="Alasan…"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-accent"><i class="fas fa-save"></i> Simpan</button>
+                    </form>
+                </div>
+
+                <!-- Cuti Bersama Masal -->
+                <div class="card card-accent-gold mb-20">
+                    <div class="card-title gold-accent"><i class="fas fa-calendar-plus"></i> Cuti Bersama Masal</div>
+                    <form id="cutiMasalForm">
+                        <div class="form-group">
+                            <label>Tanggal <span class="required">*</span></label>
+                            <input type="date" class="form-control" id="tanggalMasal" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Keterangan <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="ketMasal" placeholder="Contoh: Cuti Bersama Idul Fitri" required />
+                        </div>
+                        <button type="submit" class="btn btn-gold"><i class="fas fa-users"></i> Terapkan ke Semua</button>
+                    </form>
+                </div>
+
+                <!-- Tambah Personel -->
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-user-plus"></i> Tambah Karyawan</div>
+                    <form id="personelForm">
+                        <div class="form-group">
+                            <label>Nama <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="namaBaru" placeholder="Nama lengkap" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Kategori</label>
+                            <select class="form-control" id="kategoriBaru">
+                                <option value="Karyawan">Karyawan</option>
+                                <option value="Manajemen">Manajemen</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah</button>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- === KOLOM KANAN: KALENDER + KUOTA === -->
+            <div class="col">
+
+                <!-- Kalender -->
+                <div class="card mb-20">
+                    <div class="card-title"><i class="fas fa-calendar-days"></i> Kalender</div>
+                    <div class="cal-header">
+                        <span class="month-year" id="calMonthYear"></span>
+                        <div class="cal-nav">
+                            <button onclick="ubahBulan(-1)" aria-label="Bulan sebelumnya"><i class="fas fa-chevron-left"></i></button>
+                            <button onclick="ubahBulan(1)" aria-label="Bulan berikutnya"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="cal-grid" id="calGrid"></div>
+                    <div class="cal-legend">
+                        <span><span class="dot-event"></span> Ada ketidakhadiran</span>
+                        <span><i class="far fa-hand-pointer"></i> Klik tanggal untuk isi form</span>
+                    </div>
+                </div>
+
+                <!-- Kuota Karyawan -->
+                <div class="card mb-20">
+                    <div class="card-title"><i class="fas fa-user-tie"></i> Sisa Cuti Karyawan</div>
+                    <div class="quota-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nama</th>
+                                    <th>Sakit</th>
+                                    <th>Cuti</th>
+                                    <th>CB</th>
+                                    <th>Sisa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="quotaKaryawanBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Kuota Manajemen -->
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-user-cog"></i> Daftar Hadir Manajemen</div>
+                    <div class="quota-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nama</th>
+                                    <th>Sakit</th>
+                                    <th>Cuti</th>
+                                    <th>CB</th>
+                                    <th>Sisa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="quotaManajemenBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ===== HISTORY ===== -->
+        <hr class="section-divider" />
+
+        <div class="history-head">
+            <h3><i class="fas fa-clock-rotate-left"></i>Riwayat Ketidakhadiran</h3>
+            <div class="history-actions">
+                <button class="btn btn-outline btn-sm" id="toggleHistoryBtn" onclick="toggleHistory()">
+                    <i class="fas fa-eye"></i> Sembunyikan
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="resetFilter()"><i class="fas fa-undo"></i> Reset Filter</button>
+            </div>
+        </div>
+
+        <!-- Container riwayat yang bisa di-toggle -->
+        <div id="historyContent">
+            <div class="card">
+                <div class="history-toolbar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchHistory" placeholder="Cari nama atau keterangan…" oninput="renderTable()" />
+                    </div>
+                    <input type="month" id="filterBulan" class="form-control filter-select" onchange="renderTable()" />
+                    <select id="filterStatus" class="form-control filter-select" onchange="renderTable()">
+                        <option value="">Semua Status</option>
+                        <option value="Sakit">Sakit</option>
+                        <option value="Cuti">Cuti</option>
+                        <option value="Cuti Bersama">Cuti Bersama</option>
+                    </select>
+                </div>
+
+                <div class="history-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="center" style="width:44px;">No</th>
+                                <th>Tanggal</th>
+                                <th>Nama</th>
+                                <th>Status</th>
+                                <th>Keterangan</th>
+                                <th class="center" style="width:64px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="page-footer">
+            <i class="fas fa-database"></i> Data tersimpan di lokal browser &bull; Versi 3.1
+        </div>
+
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- JavaScript terpisah -->
+    <script src="script.js"></script>
+    <!-- PWA: Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('[SW] Registered:', reg.scope))
+                    .catch((err) => console.error('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

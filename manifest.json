@@ -1,0 +1,48 @@
+{
+  "name": "Wingsati — Manajemen Absensi & Cuti",
+  "short_name": "Wingsati",
+  "description": "Aplikasi manajemen absensi, cuti, dan ketidakhadiran karyawan",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f3b5e",
+  "theme_color": "#0f3b5e",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "id",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "wingsati logo vertikal.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "wingsati logo vertikal.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "wingsati logo vertikal.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Input Ketidakhadiran",
+      "short_name": "Input",
+      "description": "Catat ketidakhadiran karyawan",
+      "url": "./index.html#input"
+    },
+    {
+      "name": "Riwayat",
+      "short_name": "Riwayat",
+      "description": "Lihat riwayat ketidakhadiran",
+      "url": "./index.html#history"
+    }
+  ]
+}
