@@ -21,7 +21,7 @@ const firebaseConfig = {
 //  >>> PASTIKAN SAMA PERSIS DENGAN daftar di firestore.rules (function adminEmails) <<<
 // ============================================================
 const ADMIN_EMAILS = [
-    // "bprwingsati.operasional@gmail.com",
+    "bprwingsati.operasional@gmail.com",
     // "dirut@wingsati.com"
 ];
 
