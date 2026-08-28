@@ -163,6 +163,64 @@ function renderQuotaTable(kategori, tbody) {
 }
 
 // ============================================================
+//  KALENDER INDONESIA — HARI LIBUR & PERINGATAN (2025-2027)
+//  Sumber: SKB 3 Menteri + hari nasional
+// ============================================================
+const HOLIDAYS_ID = {
+    // 2025
+    '2025-01-01': { name: 'Tahun Baru', type: 'libur' },
+    '2025-01-29': { name: 'Imlek', type: 'libur' },
+    '2025-03-29': { name: 'Nyepi', type: 'libur' },
+    '2025-03-31': { name: 'Idul Fitri', type: 'libur' },
+    '2025-04-01': { name: 'Idul Fitri 2', type: 'libur' },
+    '2025-04-18': { name: 'Wafat Isa Almasih', type: 'libur' },
+    '2025-05-01': { name: 'Hari Buruh', type: 'libur' },
+    '2025-05-12': { name: 'Waisak', type: 'libur' },
+    '2025-05-29': { name: 'Kenaikan Isa Almasih', type: 'libur' },
+    '2025-06-01': { name: 'Hari Pancasila', type: 'libur' },
+    '2025-06-06': { name: 'Idul Adha', type: 'libur' },
+    '2025-06-27': { name: 'Tahun Baru Islam', type: 'libur' },
+    '2025-08-17': { name: 'Kemerdekaan RI', type: 'libur' },
+    '2025-09-05': { name: 'Maulid Nabi', type: 'libur' },
+    '2025-12-25': { name: 'Natal', type: 'libur' },
+    // peringatan (tidak libur)
+    '2025-04-21': { name: 'Hari Kartini', type: 'peringatan' },
+    '2025-05-02': { name: 'Hardiknas', type: 'peringatan' },
+    '2025-05-20': { name: 'Harkitnas', type: 'peringatan' },
+    '2025-10-28': { name: 'Sumpah Pemuda', type: 'peringatan' },
+    '2025-11-10': { name: 'Hari Pahlawan', type: 'peringatan' },
+    // 2026
+    '2026-01-01': { name: 'Tahun Baru', type: 'libur' },
+    '2026-02-17': { name: 'Imlek', type: 'libur' },
+    '2026-03-19': { name: 'Nyepi', type: 'libur' },
+    '2026-03-20': { name: 'Idul Fitri', type: 'libur' },
+    '2026-03-21': { name: 'Idul Fitri 2', type: 'libur' },
+    '2026-04-03': { name: 'Wafat Isa Almasih', type: 'libur' },
+    '2026-05-01': { name: 'Hari Buruh', type: 'libur' },
+    '2026-05-14': { name: 'Kenaikan Isa Almasih', type: 'libur' },
+    '2026-05-31': { name: 'Waisak', type: 'libur' },
+    '2026-05-27': { name: 'Idul Adha', type: 'libur' },
+    '2026-06-01': { name: 'Hari Pancasila', type: 'libur' },
+    '2026-06-16': { name: 'Tahun Baru Islam', type: 'libur' },
+    '2026-08-17': { name: 'Kemerdekaan RI', type: 'libur' },
+    '2026-08-25': { name: 'Maulid Nabi', type: 'libur' },
+    '2026-12-25': { name: 'Natal', type: 'libur' },
+    // cuti bersama 2026 (contoh, sinkron dengan data absensi 2026-05)
+    '2026-05-28': { name: 'Cuti Bersama Idul Adha', type: 'libur' },
+    '2026-12-24': { name: 'Cuti Bersama Natal', type: 'libur' },
+    // peringatan 2026
+    '2026-04-21': { name: 'Hari Kartini', type: 'peringatan' },
+    '2026-05-02': { name: 'Hardiknas', type: 'peringatan' },
+    '2026-05-20': { name: 'Harkitnas', type: 'peringatan' },
+    '2026-10-28': { name: 'Sumpah Pemuda', type: 'peringatan' },
+    '2026-11-10': { name: 'Hari Pahlawan', type: 'peringatan' },
+    // 2027 (ringkas)
+    '2027-01-01': { name: 'Tahun Baru', type: 'libur' },
+    '2027-08-17': { name: 'Kemerdekaan RI', type: 'libur' },
+    '2027-12-25': { name: 'Natal', type: 'libur' }
+};
+
+// ============================================================
 //  RENDER: CALENDAR
 // ============================================================
 
@@ -175,9 +233,9 @@ function renderCalendar() {
     calMonthYear.textContent = `${bulanNama[month]} ${year}`;
 
     calGrid.innerHTML = '';
-    ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].forEach(d => {
+    ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].forEach((d, idx) => {
         const div = document.createElement('div');
-        div.className = 'day-name';
+        div.className = 'day-name' + (idx === 0 || idx === 6 ? ' weekend-head' : '');
         div.textContent = d;
         calGrid.appendChild(div);
     });
@@ -199,6 +257,21 @@ function renderCalendar() {
         const dd = String(i).padStart(2, '0');
         const dateStr = `${year}-${mm}-${dd}`;
         div.textContent = i;
+        const dow = new Date(year, month, i).getDay();
+        const isWeekend = dow === 0 || dow === 6;
+        if (isWeekend) div.classList.add('weekend');
+        const hol = HOLIDAYS_ID[dateStr];
+        if (hol) {
+            div.classList.add(hol.type === 'libur' ? 'holiday-libur' : 'holiday-peringatan');
+            div.title = hol.name;
+            // label kecil di dalam cell untuk libur
+            if (hol.type === 'libur') {
+                const lbl = document.createElement('span');
+                lbl.className = 'hol-label';
+                lbl.textContent = hol.name.length > 14 ? hol.name.slice(0,13)+'…' : hol.name;
+                div.appendChild(lbl);
+            }
+        }
 
         if (dataAbsensi.some(d => d.tanggal === dateStr)) {
             div.classList.add('has-event');
@@ -208,6 +281,7 @@ function renderCalendar() {
         }
 
         div.addEventListener('click', () => {
+            if (hol) showToast(`📅 ${hol.name} — ${formatTanggalID(dateStr)}`, 'info');
             tanggalInput.value = dateStr;
             tanggalInput.focus();
             calGrid.querySelectorAll('.day.selected').forEach(el => el.classList.remove('selected'));

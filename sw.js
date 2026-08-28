@@ -3,7 +3,7 @@
 //  Caching strategy: Cache First + Network Fallback
 // ============================================================
 
-const CACHE_NAME = 'wingsati-v2.0';
+const CACHE_NAME = 'wingsati-v2.1';
 const ASSETS = [
     './',
     './index.html',

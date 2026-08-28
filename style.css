@@ -665,6 +665,45 @@ select.form-control {
     opacity: 0.35;
     pointer-events: none;
 }
+.cal-grid .day-name.weekend-head { color: var(--red); }
+.cal-grid .day.weekend { color: var(--red); font-weight: 700; }
+.cal-grid .day.weekend:not(.holiday-libur) { background: #fff6f6; }
+[data-theme="dark"] .cal-grid .day.weekend:not(.holiday-libur) { background: #2a1414; }
+.cal-grid .day.holiday-libur {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border-color: #fca5a5;
+    font-weight: 800;
+}
+[data-theme="dark"] .cal-grid .day.holiday-libur {
+    background: linear-gradient(135deg, #3f0a0a, #7f1d1d);
+    color: #fecaca;
+    border-color: #991b1b;
+}
+.cal-grid .day.holiday-peringatan {
+    border-color: var(--gold);
+    box-shadow: inset 0 0 0 1px var(--gold);
+    font-weight: 700;
+}
+.cal-grid .day .hol-label {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+    font-size: 6.5px;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    color: #991b1b;
+    pointer-events: none;
+}
+[data-theme="dark"] .cal-grid .day .hol-label { color: #fecaca; }
+.cal-grid .day.has-event.holiday-libur::after { background: var(--primary); }
 
 .cal-legend {
     margin-top: 12px;
@@ -681,6 +720,36 @@ select.form-control {
     border-radius: 4px;
     background: var(--red-bg);
     border: 1px solid var(--red-border);
+    vertical-align: middle;
+    margin-right: 4px;
+}
+.cal-legend .dot-weekend {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    background: #fff6f6;
+    border: 1px solid #fca5a5;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+.cal-legend .dot-libur {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border: 1px solid #fca5a5;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+.cal-legend .dot-peringatan {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid var(--gold);
     vertical-align: middle;
     margin-right: 4px;
 }
