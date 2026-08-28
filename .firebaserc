@@ -1,3 +1,5 @@
 {
-  "projectId": "ISI_PROJECT_ID"
+  "projects": {
+    "default": "wingsati-absensi"
+  }
 }

@@ -3,7 +3,7 @@
 //  Caching strategy: Cache First + Network Fallback
 // ============================================================
 
-const CACHE_NAME = 'wingsati-v1.7';
+const CACHE_NAME = 'wingsati-v1.8';
 const ASSETS = [
     './',
     './index.html',
@@ -13,7 +13,10 @@ const ASSETS = [
     './firebase.js',
     './firebase-sync.js',
     './manifest.json',
-    './wingsati logo vertikal.png',
+    './wingsati-512.png',
+    './wingsati-192.png',
+    './wingsati-800.png',
+    './wingsati-800.webp',
     'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
 ];
 
