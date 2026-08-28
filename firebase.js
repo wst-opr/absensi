@@ -15,15 +15,18 @@ const firebaseConfig = {
 };
 
 // ============================================================
-//  HAK AKSES — DAFTAR EMAIL MANAJEMEN (ADMIN)
-//  Email di bawah ini otomatis menjadi ADMIN (bisa input/edit/hapus).
-//  Email LAIN yang login = Karyawan (hanya bisa LIHAT data).
-//  >>> PASTIKAN SAMA PERSIS DENGAN daftar di firestore.rules (function adminEmails) <<<
+//  HAK AKSES — DAFTAR EMAIL MANAJEMEN (ADMIN) PER KANTOR
+//  Pusat & Cabang terpisah — admin Cabang HANYA bisa di cabang.html
+//  >>> PASTIKAN SAMA PERSIS DENGAN daftar di firestore.rules <<<
 // ============================================================
-const ADMIN_EMAILS = [
-    "bprwingsati.operasional@gmail.com",
-    // "dirut@wingsati.com"
+const ADMIN_PUSAT = [
+    "bprwingsati.operasional@gmail.com"
 ];
+const ADMIN_CABANG = [
+    "operasional.wst.cab01@gmail.com"
+];
+// Gabungan untuk kompatibilitas (Firestore rules pakai ini)
+const ADMIN_EMAILS = [...ADMIN_PUSAT, ...ADMIN_CABANG];
 
 // Cegah app rusak jika config masih placeholder
 if (!firebaseConfig.apiKey || firebaseConfig.apiKey.indexOf("ISI_") === 0) {
@@ -54,7 +57,15 @@ let listPersonel = [];      // array personel (dari Firestore)
 let dataAbsensi = [];       // array absensi (dari Firestore)
 let firebaseReady = false;
 
-// Cek apakah user saat ini adalah Admin
+// Cek apakah user saat ini adalah Admin (per-kantor)
 function isAdmin() {
-    return !!currentUser && ADMIN_EMAILS.indexOf(currentUser.email) !== -1;
+    if (!currentUser || !currentUser.email) return false;
+    const email = currentUser.email;
+    const isCabangPage = window.location.pathname.toLowerCase().includes('cabang');
+    if (isCabangPage) {
+        // Di halaman Cabang: admin cabang ATAU super-admin pusat bisa kelola
+        return ADMIN_CABANG.indexOf(email) !== -1 || ADMIN_PUSAT.indexOf(email) !== -1;
+    }
+    // Di halaman Pusat: hanya admin pusat
+    return ADMIN_PUSAT.indexOf(email) !== -1;
 }

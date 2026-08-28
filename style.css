@@ -14,6 +14,39 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* ===== INLINE SVG ICONS ===== */
+.icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    vertical-align: middle;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Icon sizes for different contexts */
+.stat-icon .icon { width: 22px; height: 22px; }
+.card-title .icon { width: 18px; height: 18px; }
+.btn .icon { width: 16px; height: 16px; }
+.btn-icon .icon { width: 18px; height: 18px; }
+.theme-toggle .icon { width: 20px; height: 20px; }
+.cal-nav .icon { width: 16px; height: 16px; }
+.cal-legend .icon { width: 14px; height: 14px; }
+.search-box .icon { width: 16px; height: 16px; position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text3); }
+.toast .icon { width: 20px; height: 20px; flex-shrink: 0; }
+.btn-delete .icon { width: 16px; height: 16px; }
+.page-footer .icon { width: 16px; height: 16px; margin-right: 4px; }
+.install-banner-inner > .icon { width: 24px; height: 24px; }
+.login-form .icon { width: 16px; height: 16px; }
+
+/* Adjust search box for inline icon */
+.history-toolbar .search-box { position: relative; }
+.history-toolbar .search-box input { padding-left: 36px; }
+
 :root {
     color-scheme: light;
 
@@ -701,6 +734,19 @@ select.form-control {
 .quota-wrap tbody tr:hover {
     background: var(--surface2);
 }
+.quota-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+.quota-hint {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 8px;
+    line-height: 1.4;
+}
+.quota-hint strong { color: var(--text2); }
 
 /* ===== HISTORY ===== */
 .history-head {
@@ -739,13 +785,14 @@ select.form-control {
     min-width: 180px;
     position: relative;
 }
-.history-toolbar .search-box i {
+.history-toolbar .search-box .icon {
     position: absolute;
     left: 13px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text3);
-    font-size: 13px;
+    width: 16px;
+    height: 16px;
 }
 .history-toolbar .search-box input {
     width: 100%;
@@ -954,6 +1001,46 @@ select.form-control {
     border-color: var(--primary);
     color: #fff;
     transform: rotate(12deg);
+}
+
+/* ===== KANTOR SWITCH (Pusat / Cabang) ===== */
+.kantor-switch {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 4px;
+    width: fit-content;
+    box-shadow: var(--shadow-sm);
+}
+.kantor-switch .switch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text3);
+    transition: all var(--transition);
+    border: 1px solid transparent;
+}
+.kantor-switch .switch-btn .icon { width: 16px; height: 16px; }
+.kantor-switch .switch-btn:hover {
+    color: var(--text);
+    background: var(--surface2);
+}
+.kantor-switch .switch-btn.active {
+    background: linear-gradient(135deg, var(--primary-2), var(--primary));
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(15,59,94,0.25);
+}
+@media (max-width: 640px) {
+    .kantor-switch { width: 100%; }
+    .kantor-switch .switch-btn { flex: 1; justify-content: center; padding: 10px 12px; font-size: 12.5px; }
 }
 
 /* ============================================================

@@ -3,18 +3,18 @@
 //  Caching strategy: Cache First + Network Fallback
 // ============================================================
 
-const CACHE_NAME = 'wingsati-v1.1';
+const CACHE_NAME = 'wingsati-v1.6';
 const ASSETS = [
     './',
     './index.html',
+    './cabang.html',
     './style.css',
     './script.js',
     './firebase.js',
     './firebase-sync.js',
     './manifest.json',
     './wingsati logo vertikal.png',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
 ];
 
 // Install: cache semua aset

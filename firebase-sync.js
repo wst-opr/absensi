@@ -9,7 +9,16 @@
 //  DATA DEFAULT (dipindah dari script.js)
 // ============================================================
 
-const DEFAULT_PERSONEL = [
+// ===== KONFIG MULTI-KANTOR =====
+// Deteksi halaman: index.html (Pusat) vs cabang.html (Cabang)
+// Pisahkan koleksi agar tidak tercampur
+const IS_CABANG = window.location.pathname.toLowerCase().includes('cabang');
+const DOC_PERSONEL_PATH = IS_CABANG ? 'meta/personel_cabang' : 'meta/personel';
+const COL_ABSENSI = IS_CABANG ? 'absensi_cabang' : 'absensi';
+const LABEL_KANTOR = IS_CABANG ? 'Cabang' : 'Pusat';
+
+// Data Kantor Pusat (19 karyawan + 4 manajemen) — sesuai tabel gambar s.d Juli 2026
+const DEFAULT_PERSONEL_PUSAT = [
     { nama: "MINARNI JUNARIAH", kategori: "Karyawan" },
     { nama: "I MD DWI PM", kategori: "Karyawan" },
     { nama: "KENIA CHICELIA", kategori: "Karyawan" },
@@ -34,8 +43,7 @@ const DEFAULT_PERSONEL = [
     { nama: "DIRUT", kategori: "Manajemen" },
     { nama: "DIREKTUR", kategori: "Manajemen" }
 ];
-
-const REKAP_JULI = {
+const REKAP_JULI_PUSAT = {
     "MINARNI JUNARIAH": { sakit: 0, cuti: 3, cutiBersama: 5 },
     "I MD DWI PM": { sakit: 1, cuti: 7, cutiBersama: 5 },
     "KENIA CHICELIA": { sakit: 0, cuti: 3, cutiBersama: 5 },
@@ -56,6 +64,53 @@ const REKAP_JULI = {
     "RIKO": { sakit: 0, cuti: 0, cutiBersama: 0 },
     "NOVITA": { sakit: 0, cuti: 0, cutiBersama: 0 }
 };
+
+// Data Kantor Cabang — 12 karyawan sesuai tabel s.d Juli 2026
+// Kadek Dwi Alviliani = karyawan <12 bulan → jatah cuti 0 (belum berhak)
+const DEFAULT_PERSONEL_CABANG = [
+    { nama: "TITIEN RAHMAWATI", kategori: "Manajemen" },
+    { nama: "IKA SAFITRI", kategori: "Karyawan" },
+    { nama: "D P ETY SURIYANI", kategori: "Karyawan" },
+    { nama: "EKA DIAN CAHYANI P", kategori: "Karyawan" },
+    { nama: "NI WAYAN DESSY PS", kategori: "Karyawan" },
+    { nama: "FIRMANSYAH ALAN", kategori: "Karyawan" },
+    { nama: "SURYA EKAPUTRA", kategori: "Karyawan" },
+    { nama: "CHAKY", kategori: "Karyawan" },
+    { nama: "MARSHELINA DWI L", kategori: "Karyawan" },
+    { nama: "SRI REDJEKI S", kategori: "Karyawan" },
+    { nama: "SHASAMIELLA E", kategori: "Karyawan" },
+    { nama: "KADEK DWI ALVILIANI", kategori: "Karyawan", jatahCuti: 0, catatan: "Belum 1 tahun" }
+];
+const REKAP_CABANG = {
+    "TITIEN RAHMAWATI": { sakit: 0, cuti: 1, cutiBersama: 5 },
+    "IKA SAFITRI": { sakit: 6, cuti: 0, cutiBersama: 5 },
+    "D P ETY SURIYANI": { sakit: 0, cuti: 0, cutiBersama: 5 },
+    "EKA DIAN CAHYANI P": { sakit: 1, cuti: 4, cutiBersama: 5 },
+    "NI WAYAN DESSY PS": { sakit: 2, cuti: 4, cutiBersama: 5 },
+    "FIRMANSYAH ALAN": { sakit: 0, cuti: 0, cutiBersama: 5 },
+    "SURYA EKAPUTRA": { sakit: 0, cuti: 0, cutiBersama: 5 },
+    "CHAKY": { sakit: 4, cuti: 6, cutiBersama: 5 },
+    "MARSHELINA DWI L": { sakit: 4, cuti: 3, cutiBersama: 5 },
+    "SRI REDJEKI S": { sakit: 0, cuti: 2, cutiBersama: 5 },
+    "SHASAMIELLA E": { sakit: 0, cuti: 2, cutiBersama: 5 },
+    "KADEK DWI ALVILIANI": { sakit: 0, cuti: 1, cutiBersama: 0 }
+};
+// Jatah cuti khusus: 0 untuk yang belum 12 bulan
+const JATAH_CUTI_CABANG = {
+    "KADEK DWI ALVILIANI": 0
+};
+
+// Alias aktif sesuai halaman saat ini (agar script.js tetap pakai DEFAULT_PERSONEL / REKAP_JULI)
+const DEFAULT_PERSONEL = IS_CABANG ? DEFAULT_PERSONEL_CABANG : DEFAULT_PERSONEL_PUSAT;
+const REKAP_JULI = IS_CABANG ? REKAP_CABANG : REKAP_JULI_PUSAT;
+// Helper jatah cuti per karyawan (pusat = 12 semua, cabang = 0 untuk Kadek)
+function getJatahCuti(nama) {
+    if (IS_CABANG && JATAH_CUTI_CABANG && JATAH_CUTI_CABANG[nama] !== undefined) return JATAH_CUTI_CABANG[nama];
+    // cek juga properti di DEFAULT_PERSONEL (untuk Kadek)
+    const p = DEFAULT_PERSONEL.find(x => x.nama === nama);
+    if (p && p.jatahCuti !== undefined) return p.jatahCuti;
+    return 12;
+}
 
 function generateInitialData() {
     const records = [];
@@ -84,7 +139,7 @@ function generateInitialData() {
 // Muat seluruh data dari Firestore (dengan seeding oleh admin saja)
 async function loadAll() {
     // --- Personel ---
-    const pSnap = await fbDB.doc('meta/personel').get();
+    const pSnap = await fbDB.doc(DOC_PERSONEL_PATH).get();
     if (!pSnap.exists || !pSnap.data().list || pSnap.data().list.length === 0) {
         if (isAdmin()) {
             listPersonel = DEFAULT_PERSONEL.map(p => ({ ...p }));
@@ -94,16 +149,31 @@ async function loadAll() {
         }
     } else {
         listPersonel = pSnap.data().list;
+        // Auto-repair personel jika ada yang hilang (hanya admin)
+        if (isAdmin()) {
+            const existingNames = new Set(listPersonel.map(p => p.nama));
+            let needSave = false;
+            for (const p of DEFAULT_PERSONEL) {
+                if (!existingNames.has(p.nama)) {
+                    listPersonel.push({ ...p });
+                    needSave = true;
+                }
+            }
+            if (needSave) {
+                await savePersonel();
+                console.log('[Firebase] Personel diperbaiki - ditambah yang hilang');
+            }
+        }
     }
 
     // --- Absensi ---
-    const aSnap = await fbDB.collection('absensi').orderBy('tanggal').get();
+    const aSnap = await fbDB.collection(COL_ABSENSI).orderBy('tanggal').get();
     if (aSnap.empty) {
         if (isAdmin()) {
             const seed = generateInitialData();
             dataAbsensi = [];
             for (const rec of seed) {
-                const ref = await fbDB.collection('absensi').add(rec);
+                const ref = await fbDB.collection(COL_ABSENSI).add(rec);
                 dataAbsensi.push({ id: ref.id, ...rec });
             }
         } else {
@@ -111,24 +181,105 @@ async function loadAll() {
         }
     } else {
         dataAbsensi = aSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Auto-repair: tambah data yang kurang sesuai REKAP_JULI (hanya admin)
+        if (isAdmin()) {
+            const repaired = await ensureDataIntegrity(false);
+            if (repaired > 0) {
+                console.log(`[Firebase] Auto-repair: ${repaired} record ditambahkan`);
+            }
+        }
     }
     firebaseReady = true;
 }
 
+// Perbaiki data absensi yang kurang sesuai REKAP_JULI
+// silent=false akan tampilkan toast
+async function ensureDataIntegrity(silent = true) {
+    if (!isAdmin()) {
+        if (!silent) showToast('Hanya Manajemen yang dapat repair!', 'error');
+        return 0;
+    }
+    let added = 0;
+    for (const [nama, target] of Object.entries(REKAP_JULI)) {
+        const recs = dataAbsensi.filter(d => d.nama === nama && (d.tahun === '2026' || !d.tahun));
+        const curSakit = recs.filter(d => d.status === 'Sakit').length;
+        const curCuti = recs.filter(d => d.status === 'Cuti').length;
+        const curCB = recs.filter(d => d.status === 'Cuti Bersama').length;
+
+        const needSakit = Math.max(0, target.sakit - curSakit);
+        const needCuti = Math.max(0, target.cuti - curCuti);
+        const needCB = Math.max(0, target.cutiBersama - curCB);
+
+        // Cari tanggal yang sudah dipakai untuk nama ini agar tidak duplikat
+        const usedDates = new Set(recs.map(d => d.tanggal));
+
+        const addRecords = async (count, status, ket, month) => {
+            for (let i = 0; i < count; i++) {
+                // cari tanggal kosong di bulan tersebut
+                let day = 1;
+                let dateStr = '';
+                for (let d = 1; d <= 28; d++) {
+                    const cand = `2026-${month}-${String(d).padStart(2, '0')}`;
+                    if (!usedDates.has(cand)) { dateStr = cand; usedDates.add(cand); break; }
+                }
+                if (!dateStr) dateStr = `2026-${month}-${String(10 + i).padStart(2, '0')}`;
+                const rec = { tanggal: dateStr, tahun: '2026', nama, status, keterangan: ket };
+                const id = await addAbsensi(rec);
+                dataAbsensi.push({ id, ...rec });
+                added++;
+            }
+        };
+
+        if (needSakit > 0) await addRecords(needSakit, 'Sakit', 'Sakit (s.d Juli 2026)', '02');
+        if (needCuti > 0) await addRecords(needCuti, 'Cuti', 'Cuti pribadi (s.d Juli 2026)', '03');
+        if (needCB > 0) await addRecords(needCB, 'Cuti Bersama', 'Cuti Bersama (s.d Juli 2026)', '05');
+    }
+    if (added > 0) {
+        if (!silent) showToast(`✅ Repair selesai: ${added} data ditambahkan`, 'success');
+        if (typeof renderAll === 'function') renderAll();
+    } else {
+        if (!silent) showToast('✅ Data sudah lengkap, tidak ada yang perlu diperbaiki', 'info');
+    }
+    return added;
+}
+
+// Reset total dan seed ulang sesuai REKAP_JULI (HATI-HATI: hapus semua absensi)
+async function resetFirestore() {
+    if (!isAdmin()) { showToast('Hanya Manajemen yang dapat reset!', 'error'); return; }
+    if (!confirm('HAPUS SEMUA data absensi dan isi ulang sesuai tabel gambar?\nData lama akan hilang!')) return;
+    showToast('⏳ Mereset data...', 'info');
+    const snap = await fbDB.collection(COL_ABSENSI).get();
+    const batch = fbDB.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    dataAbsensi = [];
+    const seed = generateInitialData();
+    for (const rec of seed) {
+        const ref = await fbDB.collection(COL_ABSENSI).add(rec);
+        dataAbsensi.push({ id: ref.id, ...rec });
+    }
+    if (typeof renderAll === 'function') renderAll();
+    showToast(`✅ Reset selesai: ${seed.length} records dibuat`, 'success');
+}
+
+// Expose ke window untuk dipanggil via console / tombol
+window.repairAbsensi = () => ensureDataIntegrity(false);
+window.resetFirestore = resetFirestore;
+
 // Simpan array personel ke Firestore (1 dokumen meta)
 function savePersonel() {
-    return fbDB.doc('meta/personel').set({ list: listPersonel });
+    return fbDB.doc(DOC_PERSONEL_PATH).set({ list: listPersonel });
 }
 
 // Tambah 1 record absensi, kembalikan id dokumen
 async function addAbsensi(rec) {
-    const ref = await fbDB.collection('absensi').add(rec);
+    const ref = await fbDB.collection(COL_ABSENSI).add(rec);
     return ref.id;
 }
 
 // Hapus 1 record absensi
 async function deleteAbsensi(id) {
-    return fbDB.collection('absensi').doc(id).delete();
+    return fbDB.collection(COL_ABSENSI).doc(id).delete();
 }
 
 // ============================================================
@@ -184,9 +335,12 @@ fbAuth.onAuthStateChanged(async (user) => {
     if (appRoot) appRoot.style.display = 'block';
 
     updateUserBadge();
+    // Update label kantor di header jika ada
+    const kantorLabel = document.getElementById('kantorLabel');
+    if (kantorLabel) kantorLabel.textContent = IS_CABANG ? 'Kantor Cabang' : 'Kantor Pusat';
     if (typeof renderAll === 'function') renderAll();
     showToast(
-        `👋 ${user.email} — ${currentRole === 'admin' ? 'Manajemen (Admin)' : 'Karyawan (Read-only)'}`,
+        `👋 ${user.email} — ${currentRole === 'admin' ? 'Manajemen' : 'Karyawan'} • ${LABEL_KANTOR}`,
         'info'
     );
 });

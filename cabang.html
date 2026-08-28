@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f3b5e" />
+    <title>Wingsati — Cabang | Manajemen Absensi & Cuti</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Wingsati Cabang" />
+    <link rel="apple-touch-icon" href="wingsati logo vertikal.png" />
+    <meta name="application-name" content="Wingsati Cabang" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+    <!-- ===== LOGIN SCREEN ===== -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <img src="wingsati logo vertikal.png" alt="Logo Wingsati" class="login-logo" />
+            <h1 class="login-title">Wingsati <span style="font-size:16px;color:var(--text3)">CABANG</span></h1>
+            <p class="login-sub">Manajemen Absensi &amp; Cuti — Kantor Cabang</p>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" id="loginEmail" placeholder="nama@wingsati.com" required autocomplete="email" />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+                </div>
+                <div class="login-error" id="loginError"></div>
+                <button type="submit" class="btn btn-primary"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/></svg> Masuk</button>
+                <button type="button" class="btn btn-outline btn-sm login-register" id="btnRegister">Buat Akun Baru</button>
+            </form>
+            <p class="login-hint">Manajemen = akses penuh · Karyawan = lihat saja</p>
+        </div>
+    </div>
+
+    <div id="appRoot" style="display:none;">
+
+    <div class="install-banner" id="installBanner" style="display:none;">
+        <div class="install-banner-inner">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <div class="install-text">
+                <strong>Pasang Wingsati di HP?</strong>
+                <span>Akses cepat seperti aplikasi native</span>
+            </div>
+            <div class="install-actions">
+                <button class="btn-install-yes" id="installYes">Pasang</button>
+                <button class="btn-install-no" id="installNo" aria-label="Tutup"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <header class="app-header">
+            <div class="header-left">
+                <img src="wingsati logo vertikal.png" alt="Logo Wingsati" class="logo-img" />
+                <div>
+                    <div style="font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;" id="kantorLabel">Kantor Cabang</div>
+                    <div style="font-size:11px;color:var(--text3)">Terpisah dari Kantor Pusat</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="badge-date" id="todayDate"></span>
+                <span class="user-badge" id="userBadge" title="Email login"></span>
+                <span class="role-badge" id="roleBadge">Karyawan</span>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Mode Gelap/Terang" aria-label="Ganti tema">
+                    <svg class="icon" id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                </button>
+                <button class="btn-icon" onclick="exportCSV()" title="Ekspor CSV" aria-label="Ekspor CSV">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span class="hide-mobile">Ekspor</span>
+                </button>
+                <button class="btn-icon" id="btnLogout" title="Keluar" aria-label="Logout">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Switch Kantor -->
+        <nav class="kantor-switch">
+            <a href="index.html" class="switch-btn"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Kantor Pusat</a>
+            <a href="cabang.html" class="switch-btn active"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Kantor Cabang</a>
+        </nav>
+
+        <section class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                <div class="stat-info"><div class="number" id="totalKaryawan">0</div><div class="label">Total Personel</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                <div class="stat-info"><div class="number" id="totalAbsen">0</div><div class="label">Ketidakhadiran</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon gold"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="M12 2v20"/></svg></div>
+                <div class="stat-info"><div class="number" id="totalCuti">0</div><div class="label">Cuti Terpakai</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                <div class="stat-info"><div class="number" id="rataSisa">0</div><div class="label">Rata-rata Sisa Cuti</div></div>
+            </div>
+        </section>
+
+        <div class="two-col">
+            <div class="col">
+                <div class="card form-card mb-20">
+                    <div class="card-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Input Ketidakhadiran — Cabang</div>
+                    <form id="absenForm">
+                        <div class="form-group"><label>Tanggal <span class="required">*</span></label><input type="date" class="form-control" id="tanggal" required /></div>
+                        <div class="form-group"><label>Nama <span class="required">*</span></label><select class="form-control" id="nama" required><option value="">— Pilih —</option></select></div>
+                        <div class="form-group"><label>Status <span class="required">*</span></label><select class="form-control" id="status" required><option value="Sakit">Sakit</option><option value="Cuti">Cuti (pribadi)</option><option value="Cuti Bersama">Cuti Bersama</option></select></div>
+                        <div class="form-group"><label>Keterangan</label><textarea class="form-control" id="keterangan" rows="2" placeholder="Alasan…"></textarea></div>
+                        <button type="submit" class="btn btn-accent"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan</button>
+                    </form>
+                </div>
+                <div class="card card-accent-gold form-card mb-20">
+                    <div class="card-title gold-accent"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Cuti Bersama Masal — Cabang</div>
+                    <form id="cutiMasalForm">
+                        <div class="form-group"><label>Tanggal <span class="required">*</span></label><input type="date" class="form-control" id="tanggalMasal" required /></div>
+                        <div class="form-group"><label>Keterangan <span class="required">*</span></label><input type="text" class="form-control" id="ketMasal" placeholder="Contoh: Cuti Bersama Idul Fitri" required /></div>
+                        <button type="submit" class="btn btn-gold"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Terapkan ke Semua</button>
+                    </form>
+                </div>
+                <div class="card form-card">
+                    <div class="card-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19.01" y2="8"/></svg> Tambah Karyawan — Cabang</div>
+                    <form id="personelForm">
+                        <div class="form-group"><label>Nama <span class="required">*</span></label><input type="text" class="form-control" id="namaBaru" placeholder="Nama lengkap" required /></div>
+                        <div class="form-group"><label>Kategori</label><select class="form-control" id="kategoriBaru"><option value="Karyawan">Karyawan</option><option value="Manajemen">Manajemen</option></select></div>
+                        <button type="submit" class="btn btn-primary"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card mb-20">
+                    <div class="card-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Kalender — Cabang</div>
+                    <div class="cal-header"><span class="month-year" id="calMonthYear"></span><div class="cal-nav"><button onclick="ubahBulan(-1)" aria-label="Bulan sebelumnya"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button><button onclick="ubahBulan(1)" aria-label="Bulan berikutnya"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></div></div>
+                    <div class="cal-grid" id="calGrid"></div>
+                    <div class="cal-legend"><span><span class="dot-event"></span> Ada ketidakhadiran</span><span> Klik tanggal untuk isi form</span></div>
+                </div>
+                <div class="card mb-20">
+                    <div class="card-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Sisa Cuti Karyawan — Cabang</div>
+                    <div class="quota-wrap"><table><thead><tr><th>#</th><th>Nama</th><th>Sakit</th><th>Cuti</th><th>CB</th><th>Sisa</th></tr></thead><tbody id="quotaKaryawanBody"></tbody></table></div>
+                    <div class="quota-actions">
+                        <button class="btn btn-outline btn-sm" onclick="exportQuotaExcel()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg> Ekspor Excel</button>
+                        <button class="btn btn-primary btn-sm" onclick="exportQuotaPDF()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Ekspor PDF</button>
+                    </div>
+                    <div class="quota-hint">Excel = data tabel di atas saja • PDF = dengan Mengetahui & Menyetujui <strong>Titien Rahmawati — Kepala Cabang</strong></div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Daftar Hadir Manajemen — Cabang</div>
+                    <div class="quota-wrap"><table><thead><tr><th>#</th><th>Nama</th><th>Sakit</th><th>Cuti</th><th>CB</th><th>Sisa</th></tr></thead><tbody id="quotaManajemenBody"></tbody></table></div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-divider" />
+        <div class="history-head">
+            <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Riwayat Ketidakhadiran — Cabang</h3>
+            <div class="history-actions">
+                <button class="btn btn-outline btn-sm" id="toggleHistoryBtn" onclick="toggleHistory()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Sembunyikan</button>
+                <button class="btn btn-outline btn-sm" onclick="resetFilter()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg> Reset Filter</button>
+            </div>
+        </div>
+        <div id="historyContent">
+            <div class="card">
+                <div class="history-toolbar">
+                    <div class="search-box"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="searchHistory" placeholder="Cari nama atau keterangan…" oninput="renderTable()" /></div>
+                    <input type="month" id="filterBulan" class="form-control filter-select" onchange="renderTable()" />
+                    <select id="filterStatus" class="form-control filter-select" onchange="renderTable()"><option value="">Semua Status</option><option value="Sakit">Sakit</option><option value="Cuti">Cuti</option><option value="Cuti Bersama">Cuti Bersama</option></select>
+                </div>
+                <div class="history-table-wrap"><table><thead><tr><th class="center" style="width:44px;">No</th><th>Tanggal</th><th>Nama</th><th>Status</th><th>Keterangan</th><th class="center" style="width:64px;">Aksi</th></tr></thead><tbody id="historyBody"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="page-footer"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> Data Cabang tersinkron di Cloud Firestore (absensi_cabang) &bull; Versi 3.2</div>
+    </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="firebase.js"></script>
+    <script src="firebase-sync.js"></script>
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.error('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

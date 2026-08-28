@@ -8,30 +8,55 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // DAFTAR EMAIL ADMIN — HARUS SAMA dengan ADMIN_EMAILS di firebase.js
+    // DAFTAR EMAIL ADMIN — HARUS SAMA dengan firebase.js
     function adminEmails() {
       return [
-        'admin@wingsati.com',
-        'dirut@wingsati.com'
+        'bprwingsati.operasional@gmail.com',
+        'operasional.wst.cab01@gmail.com'
       ];
     }
-
+    function adminPusat() {
+      return ['bprwingsati.operasional@gmail.com'];
+    }
+    function adminCabang() {
+      return ['operasional.wst.cab01@gmail.com'];
+    }
     function isAdmin() {
       return isSignedIn() && request.auth.token.email in adminEmails();
     }
+    function isPusatAdmin() {
+      return isSignedIn() && request.auth.token.email in adminPusat();
+    }
+    function isCabangAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email in adminCabang() ||
+        request.auth.token.email in adminPusat()
+      );
+    }
 
     // ===== DOKUMEN META (personel) =====
-    // Semua user login bisa BACA; hanya ADMIN yang bisa TULIS
+    match /meta/personel {
+      allow read: if isSignedIn();
+      allow write: if isPusatAdmin();
+    }
+    match /meta/personel_cabang {
+      allow read: if isSignedIn();
+      allow write: if isCabangAdmin();
+    }
+    // fallback untuk doc meta lain
     match /meta/{docId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // ===== KOLEKSI ABSENSI =====
-    // Semua user login bisa BACA; hanya ADMIN yang bisa TULIS
+    // ===== KOLEKSI ABSENSI (Pusat + Cabang terpisah) =====
     match /absensi/{docId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isPusatAdmin();
+    }
+    match /absensi_cabang/{docId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isCabangAdmin();
     }
   }
 }
