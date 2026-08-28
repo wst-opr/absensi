@@ -1083,14 +1083,22 @@ select.form-control {
     .header-right {
         display: flex;
         gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
     }
     .header-right .badge-date {
-        flex: 1;
+        flex: 1 1 auto;
         text-align: center;
         font-size: 12px;
-        padding: 8px 10px;
+        padding: 8px 12px;
+        min-width: fit-content;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .header-right .user-badge {
+        flex: 0 1 auto;
         min-width: 0;
-        white-space: normal;
     }
     .hide-mobile {
         display: none;
