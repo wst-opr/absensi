@@ -57,14 +57,17 @@ let listPersonel = [];      // array personel (dari Firestore)
 let dataAbsensi = [];       // array absensi (dari Firestore)
 let firebaseReady = false;
 
-// Cek apakah user saat ini adalah Admin (per-kantor)
+// Cek apakah user saat ini adalah Admin (per-kantor — STRICT: tidak cross-edit)
+// Cabang tidak bisa edit Pusat, Pusat tetap bisa view cabang tapi tidak auto-admin di cabang jika ingin strict
+// Saat ini: isAdmin di Pusat = hanya ADMIN_PUSAT, di Cabang = hanya ADMIN_CABANG
+// Jika butuh super-admin pusat kelola cabang, tambahkan || ADMIN_PUSAT di blok cabang
 function isAdmin() {
     if (!currentUser || !currentUser.email) return false;
     const email = currentUser.email;
     const isCabangPage = window.location.pathname.toLowerCase().includes('cabang');
     if (isCabangPage) {
-        // Di halaman Cabang: admin cabang ATAU super-admin pusat bisa kelola
-        return ADMIN_CABANG.indexOf(email) !== -1 || ADMIN_PUSAT.indexOf(email) !== -1;
+        // STRICT: hanya admin cabang yang bisa edit cabang
+        return ADMIN_CABANG.indexOf(email) !== -1;
     }
     // Di halaman Pusat: hanya admin pusat
     return ADMIN_PUSAT.indexOf(email) !== -1;

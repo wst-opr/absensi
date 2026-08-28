@@ -28,10 +28,7 @@ service cloud.firestore {
       return isSignedIn() && request.auth.token.email in adminPusat();
     }
     function isCabangAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email in adminCabang() ||
-        request.auth.token.email in adminPusat()
-      );
+      return isSignedIn() && request.auth.token.email in adminCabang();
     }
 
     // ===== DOKUMEN META (personel) =====

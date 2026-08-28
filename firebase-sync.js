@@ -66,9 +66,10 @@ const REKAP_JULI_PUSAT = {
 };
 
 // Data Kantor Cabang — 12 karyawan sesuai tabel s.d Juli 2026
+// Semua Karyawan (Titien bukan Manajemen, hanya Kepala Cabang sebagai penanda tangan)
 // Kadek Dwi Alviliani = karyawan <12 bulan → jatah cuti 0 (belum berhak)
 const DEFAULT_PERSONEL_CABANG = [
-    { nama: "TITIEN RAHMAWATI", kategori: "Manajemen" },
+    { nama: "TITIEN RAHMAWATI", kategori: "Karyawan" },
     { nama: "IKA SAFITRI", kategori: "Karyawan" },
     { nama: "D P ETY SURIYANI", kategori: "Karyawan" },
     { nama: "EKA DIAN CAHYANI P", kategori: "Karyawan" },
@@ -149,7 +150,7 @@ async function loadAll() {
         }
     } else {
         listPersonel = pSnap.data().list;
-        // Auto-repair personel jika ada yang hilang (hanya admin)
+        // Auto-repair personel jika ada yang hilang ATAU kategori salah (hanya admin)
         if (isAdmin()) {
             const existingNames = new Set(listPersonel.map(p => p.nama));
             let needSave = false;
@@ -159,9 +160,22 @@ async function loadAll() {
                     needSave = true;
                 }
             }
+            // Fix kategori Titien: harus Karyawan bukan Manajemen (sesuai revisi)
+            const titien = listPersonel.find(p => p.nama === "TITIEN RAHMAWATI");
+            if (titien && titien.kategori !== "Karyawan") {
+                titien.kategori = "Karyawan";
+                needSave = true;
+                console.log('[Firebase] Fix kategori Titien → Karyawan');
+            }
+            // Fix jatahCuti Kadek
+            const kadek = listPersonel.find(p => p.nama === "KADEK DWI ALVILIANI");
+            if (kadek && kadek.jatahCuti !== 0) {
+                kadek.jatahCuti = 0;
+                needSave = true;
+            }
             if (needSave) {
                 await savePersonel();
-                console.log('[Firebase] Personel diperbaiki - ditambah yang hilang');
+                console.log('[Firebase] Personel diperbaiki - ditambah yang hilang / fix kategori');
             }
         }
     }
